@@ -102,18 +102,12 @@ def analyze():
 
         fake_score = int(fake_prob * 100)
 
-        if fake_score >= 60:
+        if fake_score >= 50:
             fake_verdict = "FAKE NEWS"
-            fake_confidence = "high"
-        elif fake_score >= 45:
-            fake_verdict = "LIKELY FAKE"
-            fake_confidence = "medium"
-        elif fake_score >= 30:
-            fake_verdict = "LIKELY REAL"
-            fake_confidence = "medium"
+            fake_confidence = "high" if fake_score >= 75 else "medium"
         else:
             fake_verdict = "REAL NEWS"
-            fake_confidence = "high"
+            fake_confidence = "high" if fake_score <= 25 else "medium"
 
         # Generate explanation
         fake_indicators = []
@@ -152,19 +146,14 @@ def analyze():
 
     # --- Overall Assessment ---
     if fake_news_model is not None:
-        overall_score = int(0.5 * result["fake_news"]["score"] + 0.5 * result["ai_detection"]["score"])
+        # Take the max risk between fake news and AI, rather than averaging which washes out signals
+        overall_score = max(result["fake_news"]["score"], result["ai_detection"]["score"])
     else:
         overall_score = result["ai_detection"]["score"]
 
-    if overall_score >= 60:
-        overall_verdict = "FAKE/AI NEWS"
-        overall_label = "This news appears to be Fake or AI-Generated."
-    elif overall_score >= 45:
-        overall_verdict = "SUSPICIOUS"
-        overall_label = "This content shows concerning patterns. Verify with trusted sources."
-    elif overall_score >= 30:
-        overall_verdict = "LIKELY REAL"
-        overall_label = "This content appears mostly authentic, with minor flags."
+    if overall_score >= 50:
+        overall_verdict = "FAKE OR AI NEWS"
+        overall_label = "This content is strongly flagged as fabricated or AI-generated."
     else:
         overall_verdict = "REAL NEWS"
         overall_label = "This news appears to be authentic and human-written."

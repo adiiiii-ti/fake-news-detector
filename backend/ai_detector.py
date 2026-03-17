@@ -113,19 +113,12 @@ class AIContentDetector:
         # Scale to 0-100
         score = min(100, max(0, int(raw_score * 100)))
 
-        # Determine verdict
-        if score >= 75:
-            verdict = "Likely AI-Generated"
-            confidence = "high"
-        elif score >= 50:
-            verdict = "Possibly AI-Generated"
-            confidence = "medium"
-        elif score >= 30:
-            verdict = "Likely Human-Written"
-            confidence = "medium"
+        if score >= 50:
+            verdict = "AI-GENERATED"
+            confidence = "high" if score >= 75 else "medium"
         else:
-            verdict = "Human-Written"
-            confidence = "high"
+            verdict = "HUMAN-WRITTEN"
+            confidence = "high" if score <= 25 else "medium"
 
         # Build explanations
         details = self._build_details(metrics, score)
