@@ -102,17 +102,17 @@ def analyze():
 
         fake_score = int(fake_prob * 100)
 
-        if fake_score >= 70:
-            fake_verdict = "Likely Fake News"
+        if fake_score >= 60:
+            fake_verdict = "FAKE NEWS"
             fake_confidence = "high"
         elif fake_score >= 45:
-            fake_verdict = "Suspicious"
+            fake_verdict = "LIKELY FAKE"
             fake_confidence = "medium"
-        elif fake_score >= 25:
-            fake_verdict = "Likely Credible"
+        elif fake_score >= 30:
+            fake_verdict = "LIKELY REAL"
             fake_confidence = "medium"
         else:
-            fake_verdict = "Credible"
+            fake_verdict = "REAL NEWS"
             fake_confidence = "high"
 
         # Generate explanation
@@ -156,18 +156,18 @@ def analyze():
     else:
         overall_score = result["ai_detection"]["score"]
 
-    if overall_score >= 70:
-        overall_verdict = "High Risk"
-        overall_label = "This content shows strong indicators of being fabricated or AI-generated."
+    if overall_score >= 60:
+        overall_verdict = "FAKE/AI NEWS"
+        overall_label = "This news appears to be Fake or AI-Generated."
     elif overall_score >= 45:
-        overall_verdict = "Medium Risk"
-        overall_label = "This content shows some concerning patterns. Verify with trusted sources."
-    elif overall_score >= 25:
-        overall_verdict = "Low Risk"
+        overall_verdict = "SUSPICIOUS"
+        overall_label = "This content shows concerning patterns. Verify with trusted sources."
+    elif overall_score >= 30:
+        overall_verdict = "LIKELY REAL"
         overall_label = "This content appears mostly authentic, with minor flags."
     else:
-        overall_verdict = "Minimal Risk"
-        overall_label = "This content appears to be authentic and human-written."
+        overall_verdict = "REAL NEWS"
+        overall_label = "This news appears to be authentic and human-written."
 
     result["overall"] = {
         "score": overall_score,
