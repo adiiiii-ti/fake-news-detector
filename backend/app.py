@@ -61,12 +61,36 @@ def health():
 @app.route("/api/analyze", methods=["POST"])
 def analyze():
     data = request.get_json()
-    if not data or "text" not in data:
-        return jsonify({"error": "Please provide 'text' in the request body."}), 400
+    if not data:
+        return jsonify({"error": "No data provided in request body."}), 400
 
-    text = data["text"].strip()
+    text = ""
+    if "url" in data and data["url"].strip():
+        url = data["url"].strip()
+        try:
+            import requests
+            from bs4 import BeautifulSoup
+            headers = {"User-Agent": "Mozilla/5.0"}
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.content, "html.parser")
+            
+            # Remove scripts, styles, metadata
+            for script in soup(["script", "style", "meta", "noscript", "header", "footer"]):
+                script.extract()
+                
+            text = soup.get_text(separator=" ", strip=True)
+            if len(text) < 50:
+                raise ValueError("Could not extract enough meaningful text from the page.")
+        except Exception as e:
+            return jsonify({"error": f"Failed to extract text from URL: {str(e)}"}), 400
+    elif "text" in data and data["text"].strip():
+        text = data["text"].strip()
+    else:
+        return jsonify({"error": "Please provide either 'text' or 'url' in the request."}), 400
+
     if len(text) < 20:
-        return jsonify({"error": "Text is too short. Please provide at least 20 characters."}), 400
+        return jsonify({"error": "Text is too short for meaningful analysis. Please provide at least 20 characters."}), 400
 
     result = {}
 

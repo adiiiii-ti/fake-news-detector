@@ -103,12 +103,32 @@ fake_news = [
     "CONFIRMED: Looking at your phone screen for 8+ hours gives you telepathic powers — tech companies know!",
 ]
 
+def get_training_data():
+    import pandas as pd
+    url = "https://raw.githubusercontent.com/joolsa/fake_real_news_dataset/master/fake_or_real_news.csv"
+    print("🌐 Downloading fake news dataset from GitHub to train on real-world news...")
+    try:
+        # Load a large open-source dataset
+        df = pd.read_csv(url)
+        if 'text' in df.columns and 'label' in df.columns:
+            texts = df['text'].fillna("").tolist()
+            # FAKE == fake news (1), REAL == real news (0)
+            labels = df['label'].apply(lambda x: 1 if str(x).upper() == 'FAKE' else 0).tolist()
+            print(f"✅ Successfully downloaded {len(texts)} real-world news articles for training!")
+            return texts, labels
+    except Exception as e:
+        print(f"⚠️ Could not download the external dataset ({e}). Falling back to synthetic data.")
+    
+    # Fallback to synthetic if network fails
+    texts = real_news + fake_news
+    labels = [0] * len(real_news) + [1] * len(fake_news)
+    return texts, labels
+
 def train_model():
     """Train and save the fake news detection model."""
     print("🔧 Preparing training data...")
 
-    texts = real_news + fake_news
-    labels = [0] * len(real_news) + [1] * len(fake_news)  # 0 = real, 1 = fake
+    texts, labels = get_training_data()
 
     # Shuffle
     combined = list(zip(texts, labels))

@@ -99,26 +99,25 @@ document.querySelectorAll(".sample-btn").forEach((btn) => {
 // --- Analyze ---
 analyzeBtn.addEventListener("click", async () => {
     const activeTab = tabPaste.classList.contains("active") ? "paste" : "url";
-    let text = "";
+    let payload = {};
 
     if (activeTab === "paste") {
-        text = textInput.value.trim();
+        const textStr = textInput.value.trim();
+        if (!textStr || textStr.length < 20) {
+            showError("Please enter at least 20 characters of text to analyze.");
+            return;
+        }
+        payload = { text: textStr };
     } else {
-        // URL mode — for now, prompt user
-        const url = urlInput.value.trim();
-        if (!url) {
+        const urlStr = urlInput.value.trim();
+        if (!urlStr) {
             showError("Please enter a URL.");
             return;
         }
-        text = `[URL analysis]: ${url}\nNote: URL content extraction is a placeholder. Please paste the article text directly for best results.`;
+        payload = { url: urlStr };
     }
 
-    if (!text || text.length < 20) {
-        showError("Please enter at least 20 characters of text to analyze.");
-        return;
-    }
-
-    await analyzeText(text);
+    await analyzeText(payload);
 });
 
 // Keyboard shortcut
@@ -128,14 +127,14 @@ textInput.addEventListener("keydown", (e) => {
     }
 });
 
-async function analyzeText(text) {
+async function analyzeText(payload) {
     setLoading(true);
 
     try {
         const response = await fetch(`${API_URL}/analyze`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text }),
+            body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
